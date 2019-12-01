@@ -7,15 +7,20 @@ package test;
 }
 final class lock extends mylock
 {
-    synchronized void locking(int processID)
+     void locking(int processID)
     {
-        System.out.println("process "+processID+" entered locking ");
         flags[processID]=true;
         turn=Math.abs(processID-1);
-        if(flags[Math.abs(processID-1)])
-        System.out.println("the process that has the turn is process "+turn+" so process "+processID+" can't enter the critical section and is waiting for process "+Math.abs(processID-1));
+        if(flags[Math.abs(processID-1)]&&!flags[processID])
+          System.out.println("process "+processID+" can't enter the critical section and is waiting for process "+Math.abs(processID-1));
+        else if(flags[processID]&&!flags[Math.abs(processID-1)])
+          System.out.println("process "+processID+" will enter critical section ");
+        else if(turn==processID)
+        {
+            System.out.println("process "+processID+" will enter critical section ");
+        }
         else
-        System.out.println("the process that has the turn is process "+turn+" but this process isn't ready so process "+processID+" will enter critical section ");
+              System.out.println("process "+processID+" can't enter the critical section and is waiting for process "+Math.abs(processID-1));
         while(flags[Math.abs(processID-1)]&&turn==Math.abs(processID-1)); //waiting
     }
   
