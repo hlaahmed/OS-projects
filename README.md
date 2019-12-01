@@ -1,5 +1,7 @@
 # OS-projects
 process synchronization and race condition handling
+
+
 import java.util.Scanner;
 public class Bankers{
     private int need[][],allocate[][],max[][],avail[][],np,nr;
