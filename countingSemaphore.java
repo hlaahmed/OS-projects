@@ -1,33 +1,25 @@
-package javaapplication5;
+package test;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
- abstract class MySemaphore {
-        protected abstract void Block();
-        protected abstract void Wakeup();
-        protected int value;
-        protected MySemaphore(int initialvalue) {
-            value = initialvalue;
-        }
-  
-}
-public final class countingSemaphore extends MySemaphore {
-public countingSemaphore(int initialvalue) {super(initialvalue);}
-synchronized public void Block() {
+class MySemaphore  {
+
+int value;
+public MySemaphore(int initialvalue) {value=initialvalue;}
+synchronized public void Wait(int processid) {
 value--;
 if (value<0)
-try { System.out.println("blocked");
+try { System.out.println("process "+processid+" is blocked");
     wait(); } catch (InterruptedException e) {}
 }
-synchronized public void Wakeup() {
+synchronized public void Signal() {
 ++value;
 if (value <=0)
 {
-    System.out.println("released");
+    System.out.println("a random process is released");
     notify();
 }
-
 }
 }
 class productnum
@@ -53,11 +45,11 @@ class productnum
         this.number=number;
     }
     public void run(){
-        mySemaphore.Block();
+        mySemaphore.Wait(1);
        //critical section
         number.decrementnum();
         System.out.println("product number is "+number.number+" after t1");
-        mySemaphore.Wakeup();
+        mySemaphore.Signal();
         
         
     }
@@ -71,12 +63,12 @@ class thread2 extends Thread{
         this.number=number;
     }
     public void run(){
-        mySemaphore.Block();
+        mySemaphore.Wait(2);
         //critical section
         number.incrementnum();
         System.out.println("product number is "+number.number+" after t2");
         
-        mySemaphore.Wakeup();
+        mySemaphore.Signal();
        
     }
 }
@@ -89,13 +81,12 @@ class thread3 extends Thread{
         this.number=number;
     }
     public void run(){
-        mySemaphore.Block();
+        mySemaphore.Wait(3);
         //critical section
         number.incrementnum();
         System.out.println("product number is "+number.number+" after t3");
 
-        mySemaphore.Wakeup();
-        
+        mySemaphore.Signal();
     }
   }
 class thread4 extends Thread{
@@ -108,20 +99,20 @@ class thread4 extends Thread{
         this.number=number;
     }
     public void run(){
-        mySemaphore.Block();
+        mySemaphore.Wait(4);
         //critical section
         number.decrementnum();
         System.out.println("product number is "+number.number+" after t4");
         
-       mySemaphore.Wakeup();
+       mySemaphore.Signal();
       
       
     }
 }
-class TestSemaphore{
+public class Test{
     public static void main(String args[]) {
      
-        MySemaphore mySemaphore = new countingSemaphore(1);
+        MySemaphore mySemaphore = new MySemaphore(1);
         productnum number = new productnum();
      
         thread1 t1=new thread1(mySemaphore,number);
