@@ -1,144 +1,339 @@
-import java.util.Scanner;
 
-class Process{
+package mythread2;
+import java.util.LinkedList;
+import java.util.Scanner;
+import javafx.application.Application;
+import static javafx.application.Application.launch;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
+import javafx.stage.Stage;
+import java.util.Queue;
+
+class Process
+{
+    Color color;
     char name;
     int ArrivalTime,BurstTime,WaitingTime,TurnaroundTime,RemainingTime,CT;
-
-
-
+    int Priority=1;
+    int consume=0;
+    int consume1=0;
+    int value0=0;
+    int value = 0;
+    int value2=0;
+    
+    public void demote()
+    {
+        Priority++;
+    }
+    
 }
+ 
 
-class Operations{
-    Process [] Q1= new Process[10];
-    Process [] Q2= new Process[10];
-    Process [] Q3= new Process[10];
-    //int i,j;
-    void sortByArrival(int n){
+public class Main extends Application
+{
+     int rect=0;
+     Rectangle [] recs= new Rectangle[1000];
+     
+    class Operations extends Pane{
+    Process [] Givens= new Process[10];
+    Process [] ready= new Process[9];
+    int[] arrival= new int[10];
+    int numOfProcess;
+    int i = 0;
+    int r=0;
+    int time = 0;
+    int noofnotfinished;
+   
+    char c = 'A';
+  
+    void sortByArrival(int n)
+    {
         for(int i=0;i<n;i++)
+        {
+            
+            for(int j=i+1;j<n;j++)
+            {
+                if(Givens[i].ArrivalTime>Givens[j].ArrivalTime)
+                {
+                    Process temp=Givens[i];
+                    Givens[i]=Givens[j];
+                    Givens[j]=temp;
+                    int tmp=arrival[i];
+                    arrival[i]=arrival[j];
+                    arrival[j]=tmp;
+                }
+            }
+        }
+    }
+    void sortByPriority(int n)
+    {
+         for(int i=0;i<n;i++)
         {
             for(int j=i+1;j<n;j++)
             {
-                if(Q1[i].ArrivalTime>Q1[j].ArrivalTime)
+                if(ready[i].Priority>ready[j].Priority)
                 {
-                    Process temp=Q1[i];
-                    Q1[i]=Q1[j];
-                    Q1[j]=temp;
+                    Process temp=ready[i];
+                    ready[i]=ready[j];
+                    ready[j]=temp;
                 }
+                if(ready[i].Priority==ready[j].Priority)
+                        {
+                            if(ready[i].ArrivalTime>ready[j].ArrivalTime)
+                            {
+                               Process temp=ready[i];
+                               ready[i]=ready[j];
+                               ready[j]=temp;
+                            }
+                        }
             }
         }
     }
-
-
-}
-class Main {
-    public static void main(String[] args) {
-        Operations MLFQ = new Operations();
-        int i = 0;
-        int j = 0;
-        int k = 0;
-        int r = 0;
-        int time = 0;
-        int tq1 = 5;
-        int tq2 = 8;
-        int flag = 0;
-
-        char c = 'A';
+    void enterinfo()
+    {
         System.out.println("Enter no of processes:");
         Scanner input = new Scanner(System.in);
-        int numOfProcess = input.nextInt();
-
+        numOfProcess = input.nextInt();
+        noofnotfinished=numOfProcess;
         for (i = 0, c = 'A'; i < numOfProcess; i++, c++) {
-            MLFQ.Q1[i] = new Process();
-            MLFQ.Q1[i].name = c;
-            System.out.println("Enter the arrival time and burst time of process : " + MLFQ.Q1[i].name);
-            MLFQ.Q1[i].ArrivalTime = input.nextInt();
-            MLFQ.Q1[i].BurstTime = input.nextInt();
-            MLFQ.Q1[i].RemainingTime = MLFQ.Q1[i].BurstTime; //save burst time in remaining time for each process
-
+            this.Givens[i] = new Process();
+            this.Givens[i].name = c;
+            this.Givens[i].color=Color.HOTPINK;
+            System.out.println("Enter the arrival time and burst time of process : " + this.Givens[i].name);
+            this.Givens[i].ArrivalTime = input.nextInt();
+            arrival[i]=this.Givens[i].ArrivalTime;
+            this.Givens[i].BurstTime = input.nextInt();
+            this.Givens[i].RemainingTime = this.Givens[i].BurstTime; //save burst time in remaining time for each process
+            
         }
 
-        MLFQ.sortByArrival(numOfProcess);
-        time = MLFQ.Q1[0].ArrivalTime;
-
-        System.out.println("Process in first queue following RR with qt=5");
-
-        for (i = 0; i < numOfProcess; i++) {
-
-            if (MLFQ.Q1[i].RemainingTime <= tq1) {
-
-                time += MLFQ.Q1[i].RemainingTime;/*from arrival time of first process to completion of this process*/
-                MLFQ.Q1[i].RemainingTime = 0;
-                MLFQ.Q1[i].WaitingTime = time - MLFQ.Q1[i].ArrivalTime - MLFQ.Q1[i].BurstTime;/*amount of time process has been waiting in the first queue*/
-                MLFQ.Q1[i].TurnaroundTime = time - MLFQ.Q1[i].ArrivalTime; /*amount of time to execute the process*/
-
-                System.out.println(MLFQ.Q1[i].name + "\t" + "RT: " +  MLFQ.Q1[i].BurstTime + "\t" + "WT: " +  MLFQ.Q1[i].WaitingTime + "\t" + "TAT: " +  MLFQ.Q1[i].TurnaroundTime);
-
-
-            } else/*process moves to queue 2 with qt=8*/ {
-                MLFQ.Q2[k] = MLFQ.Q1[i];
-
-                MLFQ.Q2[k].WaitingTime = time;
-                time += tq1;
-                MLFQ.Q1[i].RemainingTime -= tq1;
-                MLFQ.Q2[k].BurstTime = MLFQ.Q1[i].RemainingTime;
-                MLFQ.Q2[k].RemainingTime = MLFQ.Q2[k].BurstTime;
-                MLFQ.Q2[k].name = MLFQ.Q1[i].name;
-                k = k + 1;
-                flag = 1;
-            }
-        }
-            if(flag==1){
-                System.out.println("Process in second queue following RR with qt=8");
-
-        }
-
-            for(i=0;i<k;i++) {
-                if (MLFQ.Q2[i].RemainingTime <= tq2) {
-                    time += MLFQ.Q2[i].RemainingTime;/*from arrival time of first process +BT of this process*/
-                    MLFQ.Q2[i].RemainingTime = 0;
-                    MLFQ.Q2[i].WaitingTime = time - tq1 - MLFQ.Q2[i].BurstTime - MLFQ.Q2[i].ArrivalTime  ;/*amount of time process has been waiting in the ready queue*/
-                    MLFQ.Q2[i].TurnaroundTime = time - MLFQ.Q2[i].ArrivalTime;/*amount of time to execute the process*/
-                    System.out.println(MLFQ.Q2[i].name + "\t" + "RT: " + MLFQ.Q2[i].BurstTime + "\t" + "WT: " +  MLFQ.Q2[i].WaitingTime + "\t"+ "TAT: " + MLFQ.Q2[i].TurnaroundTime);
-
-                }
-
-                else/*process moves to queue 3 with FCFS*/
+        this.sortByArrival(numOfProcess);
+        time = this.Givens[0].ArrivalTime;
+  
+    }
+    
+    void enterlower(Process P)
+       {
+           
+                time++;
+                P.RemainingTime=P.RemainingTime-1;
+               
+                if(P.Priority==1)
                 {
-                    MLFQ.Q3[r] = MLFQ.Q2[i];
-
-                    MLFQ.Q3[r].WaitingTime = time;
-                    time+=tq2;
-                    MLFQ.Q2[i].RemainingTime -= tq2;
-                    MLFQ.Q3[r].BurstTime = MLFQ.Q2[i].RemainingTime;
-                    MLFQ.Q3[r].RemainingTime = MLFQ.Q3[r].BurstTime;
-                    MLFQ.Q3[r].name = MLFQ.Q2[i].name;
-                    r = r+1;
-                    flag = 2;
+                    
+                    if(P.consume1==4)
+                    { P.demote();
+                      
+                    }
+                   P.consume1++;
+                  
                 }
-            }
-
-            if(flag==2)
-            System.out.println("Process in third queue following FCFS ");
-            for(i=0;i<r;i++) {
-                if (i == 0)
+                else 
                 {
-                    MLFQ.Q3[i].CT = MLFQ.Q3[i].BurstTime + time;
-
-
-            }
-                     else
-                        MLFQ.Q3[i].CT = MLFQ.Q3[i-1].CT + MLFQ.Q3[i].BurstTime;
-
+                   
+                    if(P.consume==7&&P.Priority==2)
+                        P.demote();
+                    P.consume++;   
+                  
+                        
+                   
+                    
                 }
-
-        for(i=0;i<r;i++)
+                  
+       }
+   void calculate(Process P)
+   {
+       P.WaitingTime = time - P.ArrivalTime - P.BurstTime;
+       P.TurnaroundTime = time - P.ArrivalTime; 
+       noofnotfinished--;
+       System.out.println(P.name + "\t" + "WT: " +  P.WaitingTime + "\t" + "TAT: " +  P.TurnaroundTime); 
+   }
+   void Gui(Process P,int value,int y)    
+   {
+        recs[rect]=new Rectangle(Math.abs(time-value)*10,y,value*10,20);
+        recs[rect].setFill(Color.rgb((((int)P.name)-64)*30,100,(((int)P.name)-64)*30));
+        rect++;
+       
+   }
+    
+    int run()
+    {
+     
+         for(int i=0;i<r;i++)
+              
+       {
+           switch(ready[i].Priority)
+           {
+               case(1): //enter first queue
+               {
+                   while(ready[i].consume1<5&&ready[i].RemainingTime>0)
+                      {
+                           
+                          
+                         enterlower(ready[i]);
+                         ready[i].value0++;
+                         System.out.println("process" +ready[i].name+" in queue 1 "+" consumed "+ready[i].consume1);
+                          if(ready[i].RemainingTime==0)
+                           {
+                               calculate(ready[i]);
+                           }
+                        for(int j=0;j<numOfProcess;j++)
+                         {
+                             
+                          if(Givens[j].ArrivalTime==time)
+                          { 
+                             Gui(ready[i],ready[i].value0,30);
+                             ready[i].value0=0;
+                            return 0;
+                          }
+                         }
+                             
+                        
+                     }
+                     Gui(ready[i],ready[i].value0,30);
+                     break;
+                }
+                       
+               case(2): // enter second queue
+               {
+                   for(int k=0;k<r;k++)
+                   {
+                       if(ready[k].Priority<2&&ready[k].RemainingTime!=0)
+                           return 0;
+                   }
+                       
+                      
+                           while(ready[i].consume<8&&ready[i].RemainingTime>0)
+                      {
+                           
+                         enterlower(ready[i]);
+                         ready[i].value++;
+                         System.out.println("process" +ready[i].name+" in queue 2 "+" consumed "+ready[i].consume);
+                          if(ready[i].RemainingTime==0)  
+                              calculate(ready[i]);
+                        for(int j=0;j<numOfProcess;j++)
+                         {
+                             
+                          if(Givens[j].ArrivalTime==time)
+                          
+                          {
+                               Gui(ready[i],ready[i].value,70);
+                              ready[i].value=0;
+                              return 0;
+                          }
+                              
+                         }
+                      
+                    
+                    }
+                     Gui(ready[i],ready[i].value,70);
+                      break;
+  
+               }
+               case(3): //enter third queue
+                   
+               {  
+                     
+                    for(int k=0;k<r;k++)
+                   {
+                       if(ready[k].Priority<3&&ready[k].RemainingTime!=0)
+                             return 0;
+                       
+                   }
+                       
+                      
+                          while(ready[i].RemainingTime>0)
+                      { 
+                         
+                         enterlower(ready[i]);
+                         ready[i].value2++;
+                         System.out.println("process" +ready[i].name+" in queue 3 "+" consumed "+(ready[i].consume-8));
+                         if(ready[i].RemainingTime==0)
+                             calculate(ready[i]);
+                         for(int j=0;j<numOfProcess;j++)
+                         {
+                          if(Givens[j].ArrivalTime==time)
+                           {
+                             
+                             Gui(ready[i],ready[i].value2,100);
+                             ready[i].value2=0;
+                             return 0;
+                          }
+                         }
+                         
+                         
+                        
+                      }
+                      Gui(ready[i],ready[i].value2,100);
+                      break;
+                  
+               } 
+               default:
+                   break;
+           } 
+           
+          
+      }
+       return 0;
+    }
+    void ready()
+    {
+        
+         
+        r=0;
+        for(int k=0;k<numOfProcess;k++)
         {
-            MLFQ.Q3[i].TurnaroundTime =   MLFQ.Q3[i].CT - MLFQ.Q3[i].ArrivalTime;
-            MLFQ.Q3[i].WaitingTime= MLFQ.Q3[i].CT +(- MLFQ.Q3[i].BurstTime - tq1 - tq2 - MLFQ.Q3[i].ArrivalTime );
-            System.out.println(MLFQ.Q3[i].name + "\t" + "RT: " +  MLFQ.Q3[i].BurstTime + "\t" +"WT: " + MLFQ.Q3[i].WaitingTime + "\t" + "TAT: " +  MLFQ.Q3[i].TurnaroundTime);
-
+            if(Givens[k].ArrivalTime<=time&&Givens[k].RemainingTime!=0)
+            {
+             ready[r]=Givens[k];
+             r++;
+            
+            }
         }
-
+        if(r==0)
+            time++;
+        sortByPriority(r);
+         
     }
 }
+     Operations multi = new Operations();
+     public void start(Stage ps)
+    {
+      
+        execute();
+        for(int i=0;i<rect;i++)
+            multi.getChildren().add(recs[i]);
+        Scene sc=new Scene(multi,900,900);
+        ps.setScene(sc);
+        ps.setTitle("Multi level feedback queue");
+        ps.show();
+    }
+     public void execute()
+     {
+        
+         multi.enterinfo();
+      
+       while(multi.noofnotfinished!=0)
+       {
+           multi.ready();
+           multi.run();
+           
+       }
+      
+          
+     }
+     
+    public static void main(String[] args)
+    {
+       
+        launch(args);
+    }
+
+}
+
+    
+
 
